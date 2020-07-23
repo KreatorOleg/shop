@@ -5,4 +5,9 @@ return [
     'senderEmail' => 'noreply@example.com',
     'senderName' => 'Example.com mailer',
     'user.passwordResetTokenExpire' => 3600,
+    //
+    'cookieDomain' => '.shop.com',
+    'cookieValidationKey' => '',
+    'frontendHostInfo' => 'shop.com',
+    'backendHostInfo' => 'admin.shop.com',
 ];

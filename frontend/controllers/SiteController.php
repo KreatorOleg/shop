@@ -14,6 +14,8 @@ use frontend\models\PasswordResetRequestForm;
 use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
 use frontend\models\ContactForm;
+use yii\web\UrlManager;
+use function Couchbase\defaultDecoder;
 
 /**
  * Site controller
