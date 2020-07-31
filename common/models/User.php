@@ -28,6 +28,24 @@ class User extends ActiveRecord implements IdentityInterface
     const STATUS_INACTIVE = 9;
     const STATUS_ACTIVE = 10;
 
+    public static function signup(string $username, string $email, string $password) : self
+    {
+        $object = new self();
+        $object->username = $username;
+        $object->email = $email;
+        $object->setPassword($password);
+        $object->created_at = time();
+        $object->status = self::STATUS_ACTIVE;
+        $object->generateAuthKey();
+
+        return $object;
+    }
+
+
+    public function isActive()
+    {
+        return $this->status == self::STATUS_ACTIVE;
+    }
 
     /**
      * {@inheritdoc}
@@ -93,10 +111,12 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public static function findByPasswordResetToken($token)
     {
+        //проверяем, что срок действия токена еще не истек
         if (!static::isPasswordResetTokenValid($token)) {
             return null;
         }
 
+        //поиск пользователя по токену
         return static::findOne([
             'password_reset_token' => $token,
             'status' => self::STATUS_ACTIVE,
@@ -124,14 +144,28 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public static function isPasswordResetTokenValid($token)
     {
-        if (empty($token)) {
-            return false;
-        }
-
+        //текущение время +1
         $timestamp = (int) substr($token, strrpos($token, '_') + 1);
         $expire = Yii::$app->params['user.passwordResetTokenExpire'];
         return $timestamp + $expire >= time();
+
     }
+
+    public function requestPasswordReset()
+    {
+        //Если токен не пустой и
+        //его срок действия еще не истек
+        //бросаем исключение
+        if(!empty($this->password_reset_token) &&
+            self::isPasswordResetTokenValid($this->password_reset_token)){
+            throw new \RuntimeException('Password resetting is already requested.');
+        }
+
+        //генерируем новый токен
+        //записываем его в поле reset_password_token
+        $this->generatePasswordResetToken();
+    }
+
 
     /**
      * {@inheritdoc}
