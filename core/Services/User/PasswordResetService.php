@@ -1,13 +1,11 @@
 <?php
 namespace core\Services\User;
 
-use common\models\User;
 use frontend\models\ResetPasswordForm;
 use Yii;
-
 use core\Repositories\User\UserRepository;
 use frontend\models\PasswordResetRequestForm;
-use yii\base\InvalidArgumentException;
+
 
 class PasswordResetService
 {
@@ -41,7 +39,6 @@ class PasswordResetService
             ->setSubject('Password reset for ' . Yii::$app->name)
             ->send();
 
-
         if(!$result)
             throw new \RuntimeException('senf error');
 
@@ -71,7 +68,7 @@ class PasswordResetService
         $user = $this->repository->getByToken($token);
         //устанавливаем новый пароль
         $user->setPassword($form->password);
-        //сбрасываем старый
+        //сбрасываем токен
         $user->removePasswordResetToken();
 
         //сохраняем

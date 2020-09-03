@@ -1,10 +1,14 @@
 <?php
 namespace frontend\controllers;
 
+use core\Repositories\User\UserRepository;
+use core\Services\MyClass;
+use core\Services\TestService;
+use core\Services\User\Bar;
+use core\Services\User\Foo;
 use core\Services\User\PasswordResetService;
+use core\Services\User\Qux;
 use core\Services\User\SignupService;
-use frontend\models\ResendVerificationEmailForm;
-use frontend\models\VerifyEmailForm;
 use Yii;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
@@ -171,7 +175,6 @@ class SiteController extends Controller
      */
     public function actionSignup()
     {
-
         $form = new SignupForm();
 
         if ($form->load(Yii::$app->request->post()) && $form->validate()) {
@@ -251,3 +254,9 @@ class SiteController extends Controller
 
 
 }
+
+
+
+
+
+
