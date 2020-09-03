@@ -1,51 +1,20 @@
 <?php
 namespace frontend\controllers;
 
-use core\Repositories\User\UserRepository;
-use core\Services\MyClass;
-use core\Services\TestService;
-use core\Services\User\Bar;
-use core\Services\User\Foo;
-use core\Services\User\PasswordResetService;
-use core\Services\User\Qux;
-use core\Services\User\SignupService;
 use Yii;
+
+use core\services\User\PasswordResetService;
+use core\services\User\SignupService;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
-use common\models\LoginForm;
-use frontend\models\PasswordResetRequestForm;
-use frontend\models\ResetPasswordForm;
-use frontend\models\SignupForm;
-use frontend\models\ContactForm;
+use yii\web\ErrorAction;
 
-
-/**
- * Site controller
- */
 class SiteController extends Controller
 {
-    private $signupService;
-    private $passwordResetService;
 
-    public function __construct(
-        $id,
-        $module,
-        SignupService $signupService,
-        PasswordResetService $passwordResetService,
-        $config = [])
-    {
-        $this->signupService = $signupService;
-        $this->passwordResetService = $passwordResetService;
-        parent::__construct($id, $module, $config);
-    }
-
-
-    /**
-     * {@inheritdoc}
-     */
     public function behaviors()
     {
         return [
@@ -80,8 +49,8 @@ class SiteController extends Controller
     public function actions()
     {
         return [
-            'error' => [
-                'class' => 'yii\web\ErrorAction',
+            'errorHandler' => [
+                'errorAction' => 'site/error',
             ],
             'captcha' => [
                 'class' => 'yii\captcha\CaptchaAction',
@@ -90,168 +59,26 @@ class SiteController extends Controller
         ];
     }
 
-    /**
-     * Displays homepage.
-     *
-     * @return mixed
-     */
     public function actionIndex()
     {
         return $this->render('index');
     }
 
-    /**
-     * Logs in a user.
-     *
-     * @return mixed
-     */
-    public function actionLogin()
-    {
-        if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
-        }
 
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
-        } else {
-            $model->password = '';
 
-            return $this->render('login', [
-                'model' => $model,
-            ]);
-        }
-    }
-
-    /**
-     * Logs out the current user.
-     *
-     * @return mixed
-     */
-    public function actionLogout()
-    {
-        Yii::$app->user->logout();
-
-        return $this->goHome();
-    }
-
-    /**
-     * Displays contact page.
-     *
-     * @return mixed
-     */
-    public function actionContact()
-    {
-        $model = new ContactForm();
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            if ($model->sendEmail(Yii::$app->params['adminEmail'])) {
-                Yii::$app->session->setFlash('success', 'Thank you for contacting us. We will respond to you as soon as possible.');
-            } else {
-                Yii::$app->session->setFlash('error', 'There was an error sending your message.');
-            }
-
-            return $this->refresh();
-        } else {
-            return $this->render('contact', [
-                'model' => $model,
-            ]);
-        }
-    }
-
-    /**
-     * Displays about page.
-     *
-     * @return mixed
-     */
     public function actionAbout()
     {
         return $this->render('about');
     }
 
-    /**
-     * Signs user up.
-     *
-     * @return mixed
-     */
-    public function actionSignup()
+    public function actionError()
     {
-        $form = new SignupForm();
+        $errorHandler = Yii::$app->errorHandler;
 
-        if ($form->load(Yii::$app->request->post()) && $form->validate()) {
-            try {
-                $this->signupService->signup($form);
-            }catch (\RuntimeException $e){
-                Yii::$app->session->setFlash('error', $e->getMessage());
-            }
-
-            return $this->goHome();
-        }
-
-        return $this->render('signup', [
-            'model' => $form,
+        return $this->render('error',[
+            'errorHandler' => $errorHandler
         ]);
     }
-
-    /**
-     * Requests password reset.
-     *
-     * @return mixed
-     */
-    public function actionRequestPasswordReset()
-    {
-
-        $form = new PasswordResetRequestForm();
-        if ($form->load(Yii::$app->request->post()) && $form->validate()) {
-            try {
-                $this->passwordResetService->request($form);
-                Yii::$app->session->setFlash('success','Проверьте почту и следуйте инструкциям');
-                return $this->goHome();
-            }catch (\RuntimeException $exception)
-            {
-                Yii::$app->session->setFlash('error',$exception->getMessage());
-            }
-
-        }
-
-        return $this->render('requestPasswordResetToken', [
-            'model' => $form,
-        ]);
-    }
-
-    /**
-     * Resets password.
-     *
-     * @param string $token
-     * @return mixed
-     * @throws BadRequestHttpException
-     */
-
-    public function actionConfirm($token)
-    {
-        try {
-            $this->passwordResetService->validateToken($token);
-        } catch (InvalidArgumentException $e) {
-            throw new BadRequestHttpException($e->getMessage());
-        }
-
-        $form = new ResetPasswordForm();
-
-        if ($form->load(Yii::$app->request->post()) && $form->validate()) {
-            try {
-                $this->passwordResetService->reset($form, $token);
-                Yii::$app->session->setFlash('success', 'New password saved.');
-            } catch (\RuntimeException $exception){
-                Yii::$app->session->setFlash('error', $exception->getMessage());
-            }
-
-            return $this->goHome();
-        }
-
-        return $this->render('resetPassword', [
-            'model' => $form,
-        ]);
-    }
-
 
 }
 

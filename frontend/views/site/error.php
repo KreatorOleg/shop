@@ -4,6 +4,7 @@
 /* @var $name string */
 /* @var $message string */
 /* @var $exception Exception */
+/* @var $errorHandler \yii\web\ErrorHandler */
 
 use yii\helpers\Html;
 
@@ -16,6 +17,9 @@ $this->title = $name;
     <div class="alert alert-danger">
         <?= nl2br(Html::encode($message)) ?>
     </div>
+
+    <p>Code error <?=$errorHandler->exception->statusCode?></p>
+    <p>Code error <?=$errorHandler->exception->getMessage()?></p>
 
     <p>
         The above error occurred while the Web server was processing your request.

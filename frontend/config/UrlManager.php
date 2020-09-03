@@ -7,8 +7,11 @@ return [
     'showScriptName' => false,
     'rules' => [
         '' => 'site/index',
-        'contact' => 'site/contact',//не забыть изменить ссылку /contact
-        '<_action:login|logout>' => 'site/<_action>',
+        '/about' => 'site/about',
+        '<_action:login|logout>' => '/auth/auth/<_action>',
+        '<_action:signup>' => '/auth/signup/<_action>',
+        '<_action:request>' => '/auth/reset/<_action>',
+        '/contact' => '/contact/index',
         '<_controller:[\w\-]+>' => '<_controller>/index',
         '<_controller:[\w\-]+><_id:\d+>' => '<_controller>/view',
         '<_controller:[\w\-]+>/<_action:[\w\-]+>' => '<_controller>/<_action>',
